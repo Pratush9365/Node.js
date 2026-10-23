@@ -1,0 +1,1 @@
+{"version":3,"file":"database.middleware.js","sourceRoot":"","sources":["../../../src/middleware/database.middleware.ts"],"names":[],"mappings":"AACA,OAAO,IAAI,MAAM,SAAS,CAAC;AAE3B,MAAM,OAAO,kBAAkB;IACxB,MAAM,CAAU,MAAM,GAAG,CAC9B,IAAa,EACb,GAAa,EACb,IAAkB,EAClB,EAAE;QACF,GAAG,CAAC,MAAM,CAAC,EAAE,GAAG,IAAI,CAAC;QACrB,IAAI,EAAE,CAAC;IACT,CAAC,CAAC;CACD"}

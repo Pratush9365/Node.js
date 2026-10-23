@@ -1,0 +1,1 @@
+{"version":3,"file":"mark.dto.d.ts","sourceRoot":"","sources":["../../../../src/module/mark/mark.dto.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,eAAe,EAAE,eAAe,EAAE,MAAM,qBAAqB,CAAC;AAE5E,qBAAa,OAAO;IACpB,OAAO,CAAC,MAAM,CAAC,QAAQ;IAmBvB,OAAc,MAAM,CAAC,IAAI,EAAE,OAAO,GAAG,eAAe,CAAmC;IACvF,OAAc,MAAM,CAAC,IAAI,EAAE,OAAO,GAAG,eAAe,CAAmC;CACtF"}

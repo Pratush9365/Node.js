@@ -1,0 +1,16 @@
+import { Router } from "express";
+import { StudentController } from "../module/student/student.controller.js";
+
+export class StudentRoute {
+    public readonly router = Router();
+
+    public constructor(private readonly controller = new StudentController()) {
+        this.router.post("/", this.controller.create.bind(this.controller));
+        this.router.get("/", this.controller.getAll.bind(this.controller));
+        this.router.get("/:studentId", this.controller.getById.bind(this.controller));
+        this.router.put("/:studentId", this.controller.update.bind(this.controller));
+        this.router.delete("/:studentId", this.controller.delete.bind(this.controller));
+    }
+}
+
+export const studentRoute = new StudentRoute().router;

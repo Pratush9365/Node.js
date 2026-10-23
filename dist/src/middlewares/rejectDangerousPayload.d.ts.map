@@ -1,0 +1,1 @@
+{"version":3,"file":"rejectDangerousPayload.d.ts","sourceRoot":"","sources":["../../../src/middlewares/rejectDangerousPayload.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,SAAS,CAAC;AAG9C,qBAAa,gCAAgC;IACzC,OAAO,CAAC,MAAM,CAAC,eAAe;IAK9B,gBAAuB,MAAM,EAAE,cAAc,CAG3C;CACL"}

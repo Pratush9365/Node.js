@@ -1,8 +1,11 @@
-import pool from "../../middleware/db.js";
+import type { Repository } from "typeorm";
+import { AppDataSource } from "../../config/data-source.js";
+import { Customer } from "./customer.entity.js";
 
 export class UserService {
-    public async getAll() {
-        const response = await pool.query("SELECT * FROM customers");
-        return response.rows;
+    public constructor(private readonly repository: Repository<Customer> = AppDataSource.getRepository(Customer)) {}
+
+    public getAll(): Promise<Customer[]> {
+        return this.repository.find();
     }
 }

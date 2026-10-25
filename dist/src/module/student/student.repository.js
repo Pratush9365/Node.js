@@ -1,44 +1,28 @@
-import pool from "../../middleware/db.js";
+import { AppDataSource } from "../../config/data-source.js";
+import { Student } from "./student.entity.js";
 export class StudentRepository {
-    database;
-    schemaPromise;
-    constructor(database = pool) {
-        this.database = database;
+    repository;
+    constructor(repository = AppDataSource.getRepository(Student)) {
+        this.repository = repository;
     }
-    async ensureSchema() {
-        this.schemaPromise ??= this.database.query(`
-            CREATE TABLE IF NOT EXISTS students (
-                id UUID PRIMARY KEY,
-                name VARCHAR(255) NOT NULL CHECK (length(trim(name)) > 0),
-                email VARCHAR(255) NOT NULL UNIQUE
-            )
-        `).then(() => undefined);
-        return this.schemaPromise;
+    create(input) {
+        return this.repository.save(this.repository.create(input));
     }
-    async create(id, input) {
-        await this.ensureSchema();
-        const result = await this.database.query("INSERT INTO students (id, name, email) VALUES ($1, $2, $3) RETURNING id, name, email", [id, input.name, input.email]);
-        return result.rows[0];
+    findAll() {
+        return this.repository.find({ order: { name: "ASC", id: "ASC" } });
     }
-    async findAll() {
-        await this.ensureSchema();
-        const result = await this.database.query("SELECT id, name, email FROM students ORDER BY name, id");
-        return result.rows;
-    }
-    async findById(id) {
-        await this.ensureSchema();
-        const result = await this.database.query("SELECT id, name, email FROM students WHERE id = $1", [id]);
-        return result.rows[0] ?? null;
+    findById(id) {
+        return this.repository.findOneBy({ id });
     }
     async update(id, input) {
-        await this.ensureSchema();
-        const result = await this.database.query("UPDATE students SET name = $2, email = $3 WHERE id = $1 RETURNING id, name, email", [id, input.name, input.email]);
-        return result.rows[0] ?? null;
+        const student = await this.findById(id);
+        if (!student)
+            return null;
+        return this.repository.save(Object.assign(student, input));
     }
     async delete(id) {
-        await this.ensureSchema();
-        const result = await this.database.query("DELETE FROM students WHERE id = $1", [id]);
-        return result.rowCount === 1;
+        const result = await this.repository.delete({ id });
+        return result.affected === 1;
     }
 }
 //# sourceMappingURL=student.repository.js.map

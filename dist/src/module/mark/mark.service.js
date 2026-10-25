@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { AppError } from "../../errors/AppError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
 import { StudentRepository } from "../student/student.repository.js";
 import { MarkRepository } from "./mark.repository.js";
 export class MarkService {
@@ -10,28 +10,31 @@ export class MarkService {
         this.studentRepository = studentRepository;
     }
     async requireStudent(studentId) {
-        if (!await this.studentRepository.findById(studentId))
+        if (!(await this.studentRepository.findById(studentId)))
             throw AppError.notFound("Student not found");
     }
     rethrowKnownDatabaseError(error) {
-        if (typeof error === "object" && error !== null && "code" in error) {
-            if (error.code === "23505")
+        switch (getDatabaseErrorCode(error)) {
+            case PgErrorCode.UNIQUE_VIOLATION:
                 throw AppError.conflict("A mark for this student and subject already exists");
-            if (error.code === "23503")
+            case PgErrorCode.FOREIGN_KEY_VIOLATION:
                 throw AppError.notFound("Student not found");
+            default:
+                throw error;
         }
-        throw error;
     }
     async create(input) {
         await this.requireStudent(input.studentId);
         try {
-            return await this.repository.create(randomUUID(), input);
+            return await this.repository.create(input);
         }
         catch (error) {
             return this.rethrowKnownDatabaseError(error);
         }
     }
-    getAll(filters) { return this.repository.findAll(filters); }
+    getAll(filters) {
+        return this.repository.findAll(filters);
+    }
     async getById(id) {
         const mark = await this.repository.findById(id);
         if (!mark)
@@ -40,18 +43,23 @@ export class MarkService {
     }
     async update(id, input) {
         await this.requireStudent(input.studentId);
+        let mark;
         try {
-            const mark = await this.repository.update(id, input);
-            if (!mark)
-                throw AppError.notFound("Mark not found");
-            return mark;
+            mark = await this.repository.update(id, input);
         }
         catch (error) {
             return this.rethrowKnownDatabaseError(error);
         }
+        if (!mark)
+            throw AppError.notFound("Mark not found");
+        return mark;
     }
-    async remove(id) { if (!await this.repository.delete(id))
-        throw AppError.notFound("Mark not found"); }
-    getSubjectAverages() { return this.repository.findSubjectAverages(); }
+    async remove(id) {
+        if (!(await this.repository.delete(id)))
+            throw AppError.notFound("Mark not found");
+    }
+    getSubjectAverages() {
+        return this.repository.findSubjectAverages();
+    }
 }
 //# sourceMappingURL=mark.service.js.map

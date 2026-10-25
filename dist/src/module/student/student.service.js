@@ -1,25 +1,29 @@
-import { randomUUID } from "node:crypto";
 import { AppError } from "../../errors/AppError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
+import { Student } from "./student.entity.js";
 import { StudentRepository } from "./student.repository.js";
 export class StudentService {
     repository;
     constructor(repository = new StudentRepository()) {
         this.repository = repository;
     }
-    isUniqueViolation(error) {
-        return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+    rethrowKnownDatabaseError(error) {
+        if (getDatabaseErrorCode(error) === PgErrorCode.UNIQUE_VIOLATION) {
+            throw AppError.conflict("A student with this email already exists");
+        }
+        throw error;
     }
     async create(input) {
         try {
-            return await this.repository.create(randomUUID(), input);
+            return await this.repository.create(input);
         }
         catch (error) {
-            if (this.isUniqueViolation(error))
-                throw AppError.conflict("A student with this email already exists");
-            throw error;
+            return this.rethrowKnownDatabaseError(error);
         }
     }
-    getAll() { return this.repository.findAll(); }
+    getAll() {
+        return this.repository.findAll();
+    }
     async getById(id) {
         const student = await this.repository.findById(id);
         if (!student)
@@ -27,20 +31,19 @@ export class StudentService {
         return student;
     }
     async update(id, input) {
+        let student;
         try {
-            const student = await this.repository.update(id, input);
-            if (!student)
-                throw AppError.notFound("Student not found");
-            return student;
+            student = await this.repository.update(id, input);
         }
         catch (error) {
-            if (this.isUniqueViolation(error))
-                throw AppError.conflict("A student with this email already exists");
-            throw error;
+            return this.rethrowKnownDatabaseError(error);
         }
+        if (!student)
+            throw AppError.notFound("Student not found");
+        return student;
     }
     async remove(id) {
-        if (!await this.repository.delete(id))
+        if (!(await this.repository.delete(id)))
             throw AppError.notFound("Student not found");
     }
 }

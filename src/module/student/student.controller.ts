@@ -17,11 +17,19 @@ export class StudentController {
         res.status(HttpStatus.CREATED).json(student);
     }
 
-    public async getAll(_req: Request, res: Response): Promise<void> { res.status(HttpStatus.OK).json(await this.service.getAll()); }
+    public async getAll(_req: Request, res: Response): Promise<void> {
+        res.status(HttpStatus.OK).json(await this.service.getAll());
+    }
 
-    public async getById(req: Request, res: Response): Promise<void> { res.status(HttpStatus.OK).json(await this.service.getById(this.studentId(req))); }
+    public async getById(req: Request, res: Response): Promise<void> {
+        const student = await this.service.getById(this.studentId(req));
+        res.status(HttpStatus.OK).json(student);
+    }
 
-    public async update(req: Request, res: Response): Promise<void> { res.status(HttpStatus.OK).json(await this.service.update(this.studentId(req), StudentDto.update(req.body))); }
+    public async update(req: Request, res: Response): Promise<void> {
+        const student = await this.service.update(this.studentId(req), StudentDto.update(req.body));
+        res.status(HttpStatus.OK).json(student);
+    }
 
     public async delete(req: Request, res: Response): Promise<void> {
         await this.service.remove(this.studentId(req));

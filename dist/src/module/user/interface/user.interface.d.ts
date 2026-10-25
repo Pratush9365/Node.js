@@ -1,6 +1,6 @@
 export interface IUserGetPayload {
     limit: number;
     page: number;
-    serach: string;
+    search: string;
 }
 //# sourceMappingURL=user.interface.d.ts.map

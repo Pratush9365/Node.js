@@ -1,44 +1,49 @@
-import { randomUUID } from "node:crypto";
 import { AppError } from "../../errors/AppError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
+import { Student } from "./student.entity.js";
 import type { CreateStudentInput, UpdateStudentInput } from "./student.interface.js";
 import { StudentRepository } from "./student.repository.js";
 
 export class StudentService {
     public constructor(private readonly repository = new StudentRepository()) {}
 
-    private isUniqueViolation(error: unknown): error is { code: string } {
-        return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+    private rethrowKnownDatabaseError(error: unknown): never {
+        if (getDatabaseErrorCode(error) === PgErrorCode.UNIQUE_VIOLATION) {
+            throw AppError.conflict("A student with this email already exists");
+        }
+        throw error;
     }
 
-    public async create(input: CreateStudentInput) {
+    public async create(input: CreateStudentInput): Promise<Student> {
         try {
-            return await this.repository.create(randomUUID(), input);
+            return await this.repository.create(input);
         } catch (error: unknown) {
-            if (this.isUniqueViolation(error)) throw AppError.conflict("A student with this email already exists");
-            throw error;
+            return this.rethrowKnownDatabaseError(error);
         }
     }
 
-    public getAll() { return this.repository.findAll(); }
+    public getAll(): Promise<Student[]> {
+        return this.repository.findAll();
+    }
 
-    public async getById(id: string) {
+    public async getById(id: string): Promise<Student> {
         const student = await this.repository.findById(id);
         if (!student) throw AppError.notFound("Student not found");
         return student;
     }
 
-    public async update(id: string, input: UpdateStudentInput) {
+    public async update(id: string, input: UpdateStudentInput): Promise<Student> {
+        let student: Student | null;
         try {
-            const student = await this.repository.update(id, input);
-            if (!student) throw AppError.notFound("Student not found");
-            return student;
+            student = await this.repository.update(id, input);
         } catch (error: unknown) {
-            if (this.isUniqueViolation(error)) throw AppError.conflict("A student with this email already exists");
-            throw error;
+            return this.rethrowKnownDatabaseError(error);
         }
+        if (!student) throw AppError.notFound("Student not found");
+        return student;
     }
 
     public async remove(id: string): Promise<void> {
-        if (!await this.repository.delete(id)) throw AppError.notFound("Student not found");
+        if (!(await this.repository.delete(id))) throw AppError.notFound("Student not found");
     }
 }

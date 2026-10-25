@@ -8,4 +8,8 @@ export class UserService {
     public getAll(): Promise<Customer[]> {
         return this.repository.find();
     }
+
+    public async createUser(payload: IUserPayload) {
+        await userRepo.setUser(payload)
+    }
 }

@@ -1,10 +1,11 @@
+
 import express from "express";
-import { AppDataSource } from "./src/config/data-source.js";
 import { ErrorHandler } from "./src/middleware/errorHandler.js";
 import { NotFoundMiddleware } from "./src/middleware/notFound.js";
 import { markRoute } from "./src/route/mark.route.js";
 import { studentRoute } from "./src/route/student.route.js";
 import { userRoute } from "./src/route/user.route.js";
+import { MongoDatabase } from "./src/providers/database/mongo.database.js";
 
 const DEFAULT_PORT = 3000;
 
@@ -21,14 +22,17 @@ export class ApplicationServer {
     }
 
     public async start(): Promise<void> {
-        await AppDataSource.initialize();
+        await MongoDatabase.initConn();
+
         const port = Number(process.env.PORT || DEFAULT_PORT);
-        this.app.listen(port, (error?: Error) => {
-            if (error) {
-                console.error(`Failed to listen on port ${port}:`, error);
-                process.exit(1);
-            }
+
+        const server = this.app.listen(port, () => {
             console.log(`Server started on port ${port}`);
+        });
+
+        server.on("error", (error: Error) => {
+            console.error(`Failed to listen on port ${port}:`, error);
+            process.exit(1);
         });
     }
 }

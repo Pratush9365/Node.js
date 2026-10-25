@@ -1,0 +1,1 @@
+{"version":3,"file":"mongo.database.js","sourceRoot":"","sources":["../../../../src/providers/database/mongo.database.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,UAAU,CAAC;AAEhC,MAAM,OAAO,aAAa;IACf,MAAM,CAAC,KAAK,CAAC,QAAQ;QACxB,MAAM,QAAQ,CAAC,OAAO,CAAC,oFAAoF,CAAC,CAAC;QAC7G,OAAO,CAAC,GAAG,CAAC,0BAA0B,CAAC,CAAA;IAC3C,CAAC;CACJ"}

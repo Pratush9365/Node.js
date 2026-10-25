@@ -8,7 +8,6 @@ export class StudentDto {
         if (!body || typeof body !== "object") {
             throw AppError.badRequest("Request body must be a JSON object");
         }
-
         const { name, email } = body as Record<string, unknown>;
         if (typeof name !== "string" || !name.trim()) {
             throw AppError.badRequest("name is required and must be a non-empty string");

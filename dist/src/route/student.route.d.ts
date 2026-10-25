@@ -1,4 +1,4 @@
-import { StudentController } from "../module/student/student.controller.js";
+import { StudentController } from "../modules/student/student.controller.js";
 export declare class StudentRoute {
     private readonly controller;
     readonly router: import("express-serve-static-core").Router;

@@ -1,4 +1,4 @@
-export { userRoute } from './user.route.js';
-export { studentRoute } from "./student.route.js";
-export { markRoute } from "./mark.route.js";
+export { UserRoute } from "./user.route.js";
+export { StudentRoute } from "./student.route.js";
+export { MarkRoute } from "./mark.route.js";
 //# sourceMappingURL=index.route.d.ts.map

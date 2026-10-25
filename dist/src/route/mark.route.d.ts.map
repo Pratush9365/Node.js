@@ -1,1 +1,1 @@
-{"version":3,"file":"mark.route.d.ts","sourceRoot":"","sources":["../../../src/route/mark.route.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,cAAc,EAAE,MAAM,mCAAmC,CAAC;AAEnE,qBAAa,SAAS;IAEC,OAAO,CAAC,QAAQ,CAAC,UAAU;IAD9C,SAAgB,MAAM,6CAAY;IAClC,YAAoC,UAAU,iBAAuB,EAOpE;CACJ;AAED,eAAO,MAAM,SAAS,4CAAyB,CAAC"}
+{"version":3,"file":"mark.route.d.ts","sourceRoot":"","sources":["../../../src/route/mark.route.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,MAAM,mCAAmC,CAAC;AAEnE,qBAAa,SAAS;IAId,OAAO,CAAC,QAAQ,CAAC,UAAU;IAH/B,SAAgB,MAAM,6CAAY;IAElC,YACqB,UAAU,EAAE,cAAc,EA+B9C;CACJ"}

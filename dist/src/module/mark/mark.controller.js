@@ -3,14 +3,13 @@ import { MarkDto } from "./mark.dto.js";
 import { MarkService } from "./mark.service.js";
 export class MarkController {
     service;
-    constructor(service) {
+    constructor(service = new MarkService()) {
         this.service = service;
     }
     markId(req) {
         const { markId } = req.params;
-        if (typeof markId !== "string" || !markId) {
+        if (typeof markId !== "string" || !markId)
             throw AppError.badRequest("markId is required");
-        }
         return markId;
     }
     async create(req, res) {
@@ -20,12 +19,10 @@ export class MarkController {
     async getAll(req, res) {
         const { studentId, subject } = req.query;
         const filters = {};
-        if (typeof studentId === "string" && studentId) {
+        if (typeof studentId === "string" && studentId)
             filters.studentId = studentId;
-        }
-        if (typeof subject === "string" && subject) {
+        if (typeof subject === "string" && subject)
             filters.subject = subject;
-        }
         res.status(HttpStatus.OK).json(await this.service.getAll(filters));
     }
     async getById(req, res) {
@@ -41,8 +38,7 @@ export class MarkController {
         res.status(HttpStatus.NO_CONTENT).send();
     }
     async getSubjectAverages(_req, res) {
-        const averages = await this.service.getSubjectAverages();
-        res.status(HttpStatus.OK).json({ data: averages });
+        res.status(HttpStatus.OK).json({ data: await this.service.getSubjectAverages() });
     }
 }
 //# sourceMappingURL=mark.controller.js.map

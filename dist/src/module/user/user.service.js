@@ -1,7 +1,8 @@
+import { AppDataSource } from "../../config/data-source.js";
 import { Customer } from "./customer.entity.js";
 export class UserService {
     repository;
-    constructor(repository) {
+    constructor(repository = AppDataSource.getRepository(Customer)) {
         this.repository = repository;
     }
     getAll() {

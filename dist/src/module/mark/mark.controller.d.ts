@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { MarkService } from "./mark.service.js";
 export declare class MarkController {
     private readonly service;
-    constructor(service: MarkService);
+    constructor(service?: MarkService);
     private markId;
     create(req: Request, res: Response): Promise<void>;
     getAll(req: Request, res: Response): Promise<void>;

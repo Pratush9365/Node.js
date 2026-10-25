@@ -1,15 +1,11 @@
-import type { Pool } from "pg";
-import type { CreateMarkInput, Mark, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
+import type { Repository } from "typeorm";
+import { Mark } from "./mark.entity.js";
+import type { CreateMarkInput, MarkFilters, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
 export declare class MarkRepository {
-    private readonly database;
-    private schemaPromise;
-    constructor(database?: Pool);
-    private ensureSchema;
-    create(id: string, input: CreateMarkInput): Promise<Mark>;
-    findAll(filters: {
-        studentId?: string;
-        subject?: string;
-    }): Promise<Mark[]>;
+    private readonly repository;
+    constructor(repository?: Repository<Mark>);
+    create(input: CreateMarkInput): Promise<Mark>;
+    findAll(filters: MarkFilters): Promise<Mark[]>;
     findById(id: string): Promise<Mark | null>;
     update(id: string, input: UpdateMarkInput): Promise<Mark | null>;
     delete(id: string): Promise<boolean>;

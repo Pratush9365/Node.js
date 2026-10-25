@@ -12,23 +12,33 @@ export class MarkController {
             throw AppError.badRequest("markId is required");
         return markId;
     }
-    async create(req, res) { res.status(HttpStatus.CREATED).json(await this.service.create(MarkDto.create(req.body))); }
+    async create(req, res) {
+        const mark = await this.service.create(MarkDto.create(req.body));
+        res.status(HttpStatus.CREATED).json(mark);
+    }
     async getAll(req, res) {
-        const studentId = typeof req.query.studentId === "string" ? req.query.studentId : undefined;
-        const subject = typeof req.query.subject === "string" ? req.query.subject : undefined;
+        const { studentId, subject } = req.query;
         const filters = {};
-        if (studentId)
+        if (typeof studentId === "string" && studentId)
             filters.studentId = studentId;
-        if (subject)
+        if (typeof subject === "string" && subject)
             filters.subject = subject;
         res.status(HttpStatus.OK).json(await this.service.getAll(filters));
     }
-    async getById(req, res) { res.status(HttpStatus.OK).json(await this.service.getById(this.markId(req))); }
-    async update(req, res) { res.status(HttpStatus.OK).json(await this.service.update(this.markId(req), MarkDto.update(req.body))); }
+    async getById(req, res) {
+        const mark = await this.service.getById(this.markId(req));
+        res.status(HttpStatus.OK).json(mark);
+    }
+    async update(req, res) {
+        const mark = await this.service.update(this.markId(req), MarkDto.update(req.body));
+        res.status(HttpStatus.OK).json(mark);
+    }
     async delete(req, res) {
         await this.service.remove(this.markId(req));
         res.status(HttpStatus.NO_CONTENT).send();
     }
-    async getSubjectAverages(_req, res) { res.status(HttpStatus.OK).json({ data: await this.service.getSubjectAverages() }); }
+    async getSubjectAverages(_req, res) {
+        res.status(HttpStatus.OK).json({ data: await this.service.getSubjectAverages() });
+    }
 }
 //# sourceMappingURL=mark.controller.js.map

@@ -16,7 +16,11 @@ export class MarkDto {
         }
         return { studentId: studentId.trim(), subject: subject.trim(), marks };
     }
-    static create(body) { return MarkDto.validate(body); }
-    static update(body) { return MarkDto.validate(body); }
+    static create(body) {
+        return MarkDto.validate(body);
+    }
+    static update(body) {
+        return MarkDto.validate(body);
+    }
 }
 //# sourceMappingURL=mark.dto.js.map

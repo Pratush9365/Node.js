@@ -1,68 +1,44 @@
-import pool from "../../middleware/db.js";
+import { AppDataSource } from "../../config/data-source.js";
+import { Mark } from "./mark.entity.js";
 export class MarkRepository {
-    database;
-    schemaPromise;
-    constructor(database = pool) {
-        this.database = database;
+    repository;
+    constructor(repository = AppDataSource.getRepository(Mark)) {
+        this.repository = repository;
     }
-    async ensureSchema() {
-        this.schemaPromise ??= this.database.query(`
-            CREATE TABLE IF NOT EXISTS student_marks (
-                id UUID PRIMARY KEY,
-                student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-                subject VARCHAR(255) NOT NULL CHECK (length(trim(subject)) > 0),
-                marks NUMERIC(5, 2) NOT NULL CHECK (marks >= 0 AND marks <= 100),
-                UNIQUE (student_id, subject)
-            )
-        `).then(() => undefined);
-        return this.schemaPromise;
+    create(input) {
+        return this.repository.save(this.repository.create(input));
     }
-    async create(id, input) {
-        await this.ensureSchema();
-        const result = await this.database.query(`INSERT INTO student_marks (id, student_id, subject, marks)
-             VALUES ($1, $2, $3, $4)
-             RETURNING id, student_id AS "studentId", subject, marks`, [id, input.studentId, input.subject, input.marks]);
-        return result.rows[0];
+    findAll(filters) {
+        const where = {};
+        if (filters.studentId)
+            where.studentId = filters.studentId;
+        if (filters.subject)
+            where.subject = filters.subject;
+        return this.repository.find({ where, order: { subject: "ASC", id: "ASC" } });
     }
-    async findAll(filters) {
-        await this.ensureSchema();
-        const values = [];
-        const predicates = [];
-        if (filters.studentId) {
-            values.push(filters.studentId);
-            predicates.push(`student_id = $${values.length}`);
-        }
-        if (filters.subject) {
-            values.push(filters.subject);
-            predicates.push(`subject = $${values.length}`);
-        }
-        const where = predicates.length ? ` WHERE ${predicates.join(" AND ")}` : "";
-        const result = await this.database.query(`SELECT id, student_id AS "studentId", subject, marks FROM student_marks${where} ORDER BY subject, id`, values);
-        return result.rows.map((mark) => ({ ...mark, marks: Number(mark.marks) }));
-    }
-    async findById(id) {
-        await this.ensureSchema();
-        const result = await this.database.query(`SELECT id, student_id AS "studentId", subject, marks FROM student_marks WHERE id = $1`, [id]);
-        const mark = result.rows[0];
-        return mark ? { ...mark, marks: Number(mark.marks) } : null;
+    findById(id) {
+        return this.repository.findOneBy({ id });
     }
     async update(id, input) {
-        await this.ensureSchema();
-        const result = await this.database.query(`UPDATE student_marks SET student_id = $2, subject = $3, marks = $4 WHERE id = $1
-             RETURNING id, student_id AS "studentId", subject, marks`, [id, input.studentId, input.subject, input.marks]);
-        const mark = result.rows[0];
-        return mark ? { ...mark, marks: Number(mark.marks) } : null;
+        const mark = await this.findById(id);
+        if (!mark)
+            return null;
+        return this.repository.save(Object.assign(mark, input));
     }
     async delete(id) {
-        await this.ensureSchema();
-        const result = await this.database.query("DELETE FROM student_marks WHERE id = $1", [id]);
-        return result.rowCount === 1;
+        const result = await this.repository.delete({ id });
+        return result.affected === 1;
     }
     async findSubjectAverages() {
-        await this.ensureSchema();
-        const result = await this.database.query(`SELECT subject, ROUND(AVG(marks), 2) AS "averageMarks", COUNT(*) AS "totalRecords"
-             FROM student_marks GROUP BY subject ORDER BY subject`);
-        return result.rows.map((row) => ({
+        const rows = await this.repository
+            .createQueryBuilder("mark")
+            .select("mark.subject", "subject")
+            .addSelect("ROUND(AVG(mark.marks), 2)", "averageMarks")
+            .addSelect("COUNT(*)", "totalRecords")
+            .groupBy("mark.subject")
+            .orderBy("mark.subject", "ASC")
+            .getRawMany();
+        return rows.map((row) => ({
             subject: row.subject,
             averageMarks: Number(row.averageMarks),
             totalRecords: Number(row.totalRecords),

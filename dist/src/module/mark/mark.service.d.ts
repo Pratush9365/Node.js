@@ -1,5 +1,6 @@
 import { StudentRepository } from "../student/student.repository.js";
-import type { CreateMarkInput, UpdateMarkInput } from "./mark.interface.js";
+import type { Mark } from "./mark.entity.js";
+import type { CreateMarkInput, MarkFilters, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
 import { MarkRepository } from "./mark.repository.js";
 export declare class MarkService {
     private readonly repository;
@@ -7,14 +8,11 @@ export declare class MarkService {
     constructor(repository?: MarkRepository, studentRepository?: StudentRepository);
     private requireStudent;
     private rethrowKnownDatabaseError;
-    create(input: CreateMarkInput): Promise<import("./mark.interface.js").Mark>;
-    getAll(filters: {
-        studentId?: string;
-        subject?: string;
-    }): Promise<import("./mark.interface.js").Mark[]>;
-    getById(id: string): Promise<import("./mark.interface.js").Mark>;
-    update(id: string, input: UpdateMarkInput): Promise<import("./mark.interface.js").Mark>;
+    create(input: CreateMarkInput): Promise<Mark>;
+    getAll(filters: MarkFilters): Promise<Mark[]>;
+    getById(id: string): Promise<Mark>;
+    update(id: string, input: UpdateMarkInput): Promise<Mark>;
     remove(id: string): Promise<void>;
-    getSubjectAverages(): Promise<import("./mark.interface.js").SubjectAverage[]>;
+    getSubjectAverages(): Promise<SubjectAverage[]>;
 }
 //# sourceMappingURL=mark.service.d.ts.map

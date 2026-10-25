@@ -1,8 +1,12 @@
-import pool from "../../middleware/db.js";
+import { AppDataSource } from "../../config/data-source.js";
+import { Customer } from "./customer.entity.js";
 export class UserService {
-    async getAll() {
-        const response = await pool.query("SELECT * FROM customers");
-        return response.rows;
+    repository;
+    constructor(repository = AppDataSource.getRepository(Customer)) {
+        this.repository = repository;
+    }
+    getAll() {
+        return this.repository.find();
     }
 }
 //# sourceMappingURL=user.service.js.map

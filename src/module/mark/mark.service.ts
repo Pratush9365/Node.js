@@ -1,7 +1,8 @@
-import { randomUUID } from "node:crypto";
 import { AppError } from "../../errors/AppError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
 import { StudentRepository } from "../student/student.repository.js";
-import type { CreateMarkInput, UpdateMarkInput } from "./mark.interface.js";
+import type { Mark } from "./mark.entity.js";
+import type { CreateMarkInput, MarkFilters, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
 import { MarkRepository } from "./mark.repository.js";
 
 export class MarkService {
@@ -11,46 +12,56 @@ export class MarkService {
     ) {}
 
     private async requireStudent(studentId: string): Promise<void> {
-        if (!await this.studentRepository.findById(studentId)) throw AppError.notFound("Student not found");
+        if (!(await this.studentRepository.findById(studentId))) throw AppError.notFound("Student not found");
     }
 
     private rethrowKnownDatabaseError(error: unknown): never {
-        if (typeof error === "object" && error !== null && "code" in error) {
-            if (error.code === "23505") throw AppError.conflict("A mark for this student and subject already exists");
-            if (error.code === "23503") throw AppError.notFound("Student not found");
+        switch (getDatabaseErrorCode(error)) {
+            case PgErrorCode.UNIQUE_VIOLATION:
+                throw AppError.conflict("A mark for this student and subject already exists");
+            case PgErrorCode.FOREIGN_KEY_VIOLATION:
+                throw AppError.notFound("Student not found");
+            default:
+                throw error;
         }
-        throw error;
     }
 
-    public async create(input: CreateMarkInput) {
+    public async create(input: CreateMarkInput): Promise<Mark> {
         await this.requireStudent(input.studentId);
         try {
-            return await this.repository.create(randomUUID(), input);
+            return await this.repository.create(input);
         } catch (error: unknown) {
             return this.rethrowKnownDatabaseError(error);
         }
     }
 
-    public getAll(filters: { studentId?: string; subject?: string }) { return this.repository.findAll(filters); }
+    public getAll(filters: MarkFilters): Promise<Mark[]> {
+        return this.repository.findAll(filters);
+    }
 
-    public async getById(id: string) {
+    public async getById(id: string): Promise<Mark> {
         const mark = await this.repository.findById(id);
         if (!mark) throw AppError.notFound("Mark not found");
         return mark;
     }
 
-    public async update(id: string, input: UpdateMarkInput) {
+    public async update(id: string, input: UpdateMarkInput): Promise<Mark> {
         await this.requireStudent(input.studentId);
+        let mark: Mark | null;
         try {
-            const mark = await this.repository.update(id, input);
-            if (!mark) throw AppError.notFound("Mark not found");
-            return mark;
+            mark = await this.repository.update(id, input);
         } catch (error: unknown) {
             return this.rethrowKnownDatabaseError(error);
         }
+        if (!mark) throw AppError.notFound("Mark not found");
+        return mark;
     }
 
-    public async remove(id: string): Promise<void> { if (!await this.repository.delete(id)) throw AppError.notFound("Mark not found"); }
+    public async remove(id: string): Promise<void> {
+        if (!(await this.repository.delete(id))) throw AppError.notFound("Mark not found");
+    }
 
-    public getSubjectAverages() { return this.repository.findSubjectAverages(); }
+    public getSubjectAverages(): Promise<SubjectAverage[]> {
+        return this.repository.findSubjectAverages();
+    }
 }

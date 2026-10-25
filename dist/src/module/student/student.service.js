@@ -1,5 +1,5 @@
 import { AppError } from "../../errors/AppError.js";
-import { getDatabaseErrorCode, PgErrorCode, } from "../../errors/databaseError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
 import { Student } from "./student.entity.js";
 import { StudentRepository } from "./student.repository.js";
 export class StudentService {
@@ -8,8 +8,7 @@ export class StudentService {
         this.repository = repository;
     }
     rethrowKnownDatabaseError(error) {
-        if (getDatabaseErrorCode(error) ===
-            PgErrorCode.UNIQUE_VIOLATION) {
+        if (getDatabaseErrorCode(error) === PgErrorCode.UNIQUE_VIOLATION) {
             throw AppError.conflict("A student with this email already exists");
         }
         throw error;
@@ -22,14 +21,13 @@ export class StudentService {
             return this.rethrowKnownDatabaseError(error);
         }
     }
-    async getAll() {
+    getAll() {
         return this.repository.findAll();
     }
     async getById(id) {
         const student = await this.repository.findById(id);
-        if (!student) {
+        if (!student)
             throw AppError.notFound("Student not found");
-        }
         return student;
     }
     async update(id, input) {
@@ -40,16 +38,13 @@ export class StudentService {
         catch (error) {
             return this.rethrowKnownDatabaseError(error);
         }
-        if (!student) {
+        if (!student)
             throw AppError.notFound("Student not found");
-        }
         return student;
     }
     async remove(id) {
-        const deleted = await this.repository.delete(id);
-        if (!deleted) {
+        if (!(await this.repository.delete(id)))
             throw AppError.notFound("Student not found");
-        }
     }
 }
 //# sourceMappingURL=student.service.js.map

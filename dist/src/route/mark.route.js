@@ -3,7 +3,7 @@ import { MarkController } from "../module/mark/mark.controller.js";
 export class MarkRoute {
     controller;
     router = Router();
-    constructor(controller) {
+    constructor(controller = new MarkController()) {
         this.controller = controller;
         this.router.get("/averages/subjects", this.controller.getSubjectAverages.bind(this.controller));
         this.router.post("/", this.controller.create.bind(this.controller));
@@ -13,4 +13,5 @@ export class MarkRoute {
         this.router.delete("/:markId", this.controller.delete.bind(this.controller));
     }
 }
+export const markRoute = new MarkRoute().router;
 //# sourceMappingURL=mark.route.js.map

@@ -5,7 +5,7 @@ import { MarkRepository } from "./mark.repository.js";
 export declare class MarkService {
     private readonly repository;
     private readonly studentRepository;
-    constructor(repository: MarkRepository, studentRepository: StudentRepository);
+    constructor(repository?: MarkRepository, studentRepository?: StudentRepository);
     private requireStudent;
     private rethrowKnownDatabaseError;
     create(input: CreateMarkInput): Promise<Mark>;

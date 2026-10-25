@@ -1,19 +1,17 @@
 import { AppError } from "../../errors/AppError.js";
-import { getDatabaseErrorCode, PgErrorCode, } from "../../errors/databaseError.js";
+import { getDatabaseErrorCode, PgErrorCode } from "../../errors/databaseError.js";
 import { StudentRepository } from "../student/student.repository.js";
 import { MarkRepository } from "./mark.repository.js";
 export class MarkService {
     repository;
     studentRepository;
-    constructor(repository, studentRepository) {
+    constructor(repository = new MarkRepository(), studentRepository = new StudentRepository()) {
         this.repository = repository;
         this.studentRepository = studentRepository;
     }
     async requireStudent(studentId) {
-        const student = await this.studentRepository.findById(studentId);
-        if (!student) {
+        if (!(await this.studentRepository.findById(studentId)))
             throw AppError.notFound("Student not found");
-        }
     }
     rethrowKnownDatabaseError(error) {
         switch (getDatabaseErrorCode(error)) {
@@ -39,9 +37,8 @@ export class MarkService {
     }
     async getById(id) {
         const mark = await this.repository.findById(id);
-        if (!mark) {
+        if (!mark)
             throw AppError.notFound("Mark not found");
-        }
         return mark;
     }
     async update(id, input) {
@@ -53,16 +50,13 @@ export class MarkService {
         catch (error) {
             return this.rethrowKnownDatabaseError(error);
         }
-        if (!mark) {
+        if (!mark)
             throw AppError.notFound("Mark not found");
-        }
         return mark;
     }
     async remove(id) {
-        const deleted = await this.repository.delete(id);
-        if (!deleted) {
+        if (!(await this.repository.delete(id)))
             throw AppError.notFound("Mark not found");
-        }
     }
     getSubjectAverages() {
         return this.repository.findSubjectAverages();

@@ -11,4 +11,10 @@ export class Student {
 
     @Column({ type: "varchar", length: 255, unique: true })
     email!: string;
+
+    @Column({ name: "class_name", type: "varchar", length: 2 })
+    className!: string;
+
+    @Column({ type: "char", length: 1 })
+    section!: string;
 }

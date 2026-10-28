@@ -1,30 +1,29 @@
-import express from "express";
+import { createApp } from "./src/app.js";
 import { AppDataSource } from "./src/config/data-source.js";
-import { ErrorHandler } from "./src/middleware/errorHandler.js";
-import { NotFoundMiddleware } from "./src/middleware/notFound.js";
-import { markRoute } from "./src/route/mark.route.js";
-import { studentRoute } from "./src/route/student.route.js";
-import { userRoute } from "./src/route/user.route.js";
-const DEFAULT_PORT = 3000;
+import { loadEnv } from "./src/config/env.js";
+import { AccessRepository } from "./src/module/access/access.repository.js";
+import { MarkRepository } from "./src/module/mark/mark.repository.js";
+import { StudentRepository } from "./src/module/student/student.repository.js";
+import { UserRepository } from "./src/module/user/user.repository.js";
+import { UserRoute } from "./src/routes/user.route.js";
 export class ApplicationServer {
-    app = express();
-    constructor() {
-        this.app.use(express.json());
-        this.app.use("/user", userRoute);
-        this.app.use("/api/students", studentRoute);
-        this.app.use("/api/marks", markRoute);
-        this.app.use(NotFoundMiddleware.handle);
-        this.app.use(ErrorHandler.handle);
-    }
     async start() {
+        // Fails fast, before touching the database, when the configuration is missing or unsafe.
+        const env = loadEnv();
         await AppDataSource.initialize();
-        const port = Number(process.env.PORT || DEFAULT_PORT);
-        this.app.listen(port, (error) => {
+        const repositories = {
+            users: new UserRepository(),
+            students: new StudentRepository(),
+            marks: new MarkRepository(),
+            access: new AccessRepository(),
+        };
+        const app = createApp(repositories, env, { legacyUserRoute: new UserRoute().router });
+        app.listen(env.PORT, (error) => {
             if (error) {
-                console.error(`Failed to listen on port ${port}:`, error);
+                console.error(`Failed to listen on port ${env.PORT}:`, error);
                 process.exit(1);
             }
-            console.log(`Server started on port ${port}`);
+            console.log(`Server started on port ${env.PORT}`);
         });
     }
 }

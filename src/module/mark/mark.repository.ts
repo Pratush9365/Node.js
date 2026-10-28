@@ -1,20 +1,26 @@
-import type { FindOptionsWhere, Repository } from "typeorm";
+import type { Repository } from "typeorm";
 import { AppDataSource } from "../../config/data-source.js";
+import type { AveragesFilter, StudentScope } from "../access/access.interface.js";
+import { applyAveragesFilter, applyStudentScope } from "../access/student-scope.js";
 import { Mark } from "./mark.entity.js";
-import type { CreateMarkInput, MarkFilters, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
+import type { CreateMarkInput, IMarkRepository, MarkFilters, SubjectAverage, UpdateMarkInput } from "./mark.interface.js";
 
-export class MarkRepository {
+export class MarkRepository implements IMarkRepository {
     public constructor(private readonly repository: Repository<Mark> = AppDataSource.getRepository(Mark)) {}
 
     public create(input: CreateMarkInput): Promise<Mark> {
         return this.repository.save(this.repository.create(input));
     }
 
-    public findAll(filters: MarkFilters): Promise<Mark[]> {
-        const where: FindOptionsWhere<Mark> = {};
-        if (filters.studentId) where.studentId = filters.studentId;
-        if (filters.subject) where.subject = filters.subject;
-        return this.repository.find({ where, order: { subject: "ASC", id: "ASC" } });
+    public findAll(filters: MarkFilters, scope: StudentScope): Promise<Mark[]> {
+        const query = this.repository
+            .createQueryBuilder("mark")
+            .innerJoin("mark.student", "student")
+            .orderBy("mark.subject", "ASC")
+            .addOrderBy("mark.id", "ASC");
+        if (filters.studentId) query.andWhere("mark.studentId = :studentId", { studentId: filters.studentId });
+        if (filters.subject) query.andWhere("mark.subject = :subject", { subject: filters.subject });
+        return applyStudentScope(query, "student", scope).getMany();
     }
 
     public findById(id: string): Promise<Mark | null> {
@@ -32,12 +38,14 @@ export class MarkRepository {
         return result.affected === 1;
     }
 
-    public async findSubjectAverages(): Promise<SubjectAverage[]> {
-        const rows = await this.repository
+    public async findSubjectAverages(filter: AveragesFilter): Promise<SubjectAverage[]> {
+        const query = this.repository
             .createQueryBuilder("mark")
+            .innerJoin("mark.student", "student")
             .select("mark.subject", "subject")
             .addSelect("ROUND(AVG(mark.marks), 2)", "averageMarks")
-            .addSelect("COUNT(*)", "totalRecords")
+            .addSelect("COUNT(*)", "totalRecords");
+        const rows = await applyAveragesFilter(query, "student", filter)
             .groupBy("mark.subject")
             .orderBy("mark.subject", "ASC")
             .getRawMany<{ subject: string; averageMarks: string; totalRecords: string }>();

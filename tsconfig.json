@@ -1,5 +1,7 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
+  // Only application code is built; tests are checked by tsconfig.typecheck.json.
+  "include": ["index.ts", "src", "scripts"],
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",

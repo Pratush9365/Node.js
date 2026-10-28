@@ -1,18 +1,24 @@
 import { AppError } from "../../errors/AppError.js";
+import { Validators } from "../../utils/validators.js";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export class StudentDto {
     static validate(body) {
         if (!body || typeof body !== "object") {
             throw AppError.badRequest("Request body must be a JSON object");
         }
-        const { name, email } = body;
+        const { name, email, className, section } = body;
         if (typeof name !== "string" || !name.trim()) {
             throw AppError.badRequest("name is required and must be a non-empty string");
         }
         if (typeof email !== "string" || !EMAIL_PATTERN.test(email.trim())) {
             throw AppError.badRequest("email is required and must be a valid email address");
         }
-        return { name: name.trim(), email: email.trim().toLowerCase() };
+        return {
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            className: Validators.parse(Validators.className, className, "className"),
+            section: Validators.parse(Validators.section, section, "section"),
+        };
     }
     static create(body) {
         return StudentDto.validate(body);

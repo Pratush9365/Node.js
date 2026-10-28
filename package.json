@@ -7,23 +7,32 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "build": "tsc",
     "start": "node dist/index.js",
-    "local": "tsc && node dist/index.js"
+    "local": "tsc && node dist/index.js",
+    "db:migrate": "tsc && node dist/scripts/migrate.js"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^1.1.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
-    "typescript": "^7.0.2"
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12"
   }
 }

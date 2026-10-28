@@ -1,17 +1,23 @@
 import type { Repository } from "typeorm";
 import { AppDataSource } from "../../config/data-source.js";
-import type { CreateStudentInput, UpdateStudentInput } from "./student.interface.js";
+import type { StudentScope } from "../access/access.interface.js";
+import { applyStudentScope } from "../access/student-scope.js";
+import type { CreateStudentInput, IStudentRepository, UpdateStudentInput } from "./student.interface.js";
 import { Student } from "./student.entity.js";
 
-export class StudentRepository {
+export class StudentRepository implements IStudentRepository {
     public constructor(private readonly repository: Repository<Student> = AppDataSource.getRepository(Student)) {}
 
     public create(input: CreateStudentInput): Promise<Student> {
         return this.repository.save(this.repository.create(input));
     }
 
-    public findAll(): Promise<Student[]> {
-        return this.repository.find({ order: { name: "ASC", id: "ASC" } });
+    public findAll(scope: StudentScope): Promise<Student[]> {
+        const query = this.repository
+            .createQueryBuilder("student")
+            .orderBy("student.name", "ASC")
+            .addOrderBy("student.id", "ASC");
+        return applyStudentScope(query, "student", scope).getMany();
     }
 
     public findById(id: string): Promise<Student | null> {

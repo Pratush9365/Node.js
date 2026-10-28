@@ -1,4 +1,5 @@
 import { AppDataSource } from "../../config/data-source.js";
+import { applyAveragesFilter, applyStudentScope } from "../access/student-scope.js";
 import { Mark } from "./mark.entity.js";
 export class MarkRepository {
     repository;
@@ -8,13 +9,17 @@ export class MarkRepository {
     create(input) {
         return this.repository.save(this.repository.create(input));
     }
-    findAll(filters) {
-        const where = {};
+    findAll(filters, scope) {
+        const query = this.repository
+            .createQueryBuilder("mark")
+            .innerJoin("mark.student", "student")
+            .orderBy("mark.subject", "ASC")
+            .addOrderBy("mark.id", "ASC");
         if (filters.studentId)
-            where.studentId = filters.studentId;
+            query.andWhere("mark.studentId = :studentId", { studentId: filters.studentId });
         if (filters.subject)
-            where.subject = filters.subject;
-        return this.repository.find({ where, order: { subject: "ASC", id: "ASC" } });
+            query.andWhere("mark.subject = :subject", { subject: filters.subject });
+        return applyStudentScope(query, "student", scope).getMany();
     }
     findById(id) {
         return this.repository.findOneBy({ id });
@@ -29,12 +34,14 @@ export class MarkRepository {
         const result = await this.repository.delete({ id });
         return result.affected === 1;
     }
-    async findSubjectAverages() {
-        const rows = await this.repository
+    async findSubjectAverages(filter) {
+        const query = this.repository
             .createQueryBuilder("mark")
+            .innerJoin("mark.student", "student")
             .select("mark.subject", "subject")
             .addSelect("ROUND(AVG(mark.marks), 2)", "averageMarks")
-            .addSelect("COUNT(*)", "totalRecords")
+            .addSelect("COUNT(*)", "totalRecords");
+        const rows = await applyAveragesFilter(query, "student", filter)
             .groupBy("mark.subject")
             .orderBy("mark.subject", "ASC")
             .getRawMany();

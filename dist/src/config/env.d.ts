@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { z } from "zod";
+export declare const CORS_WILDCARD_MESSAGE: string;
 export declare class EnvironmentConfig {
     static readonly schema: z.ZodObject<{
         DB_HOST: z.ZodString;
@@ -9,18 +11,13 @@ export declare class EnvironmentConfig {
         PORT: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
         PASS_PERCENTAGE: z.ZodCoercedNumber<unknown>;
         ACADEMIC_YEAR: z.ZodString;
+        JWT_SECRET: z.ZodString;
+        CORS_ORIGINS: z.ZodPipe<z.ZodDefault<z.ZodString>, z.ZodTransform<string[], string>>;
+        MARKS_RATE_LIMIT_MAX: z.ZodDefault<z.ZodCoercedNumber<unknown>>;
     }, z.core.$strip>;
     static validate(input?: NodeJS.ProcessEnv): z.infer<typeof EnvironmentConfig.schema>;
 }
 export type Env = z.infer<typeof EnvironmentConfig.schema>;
-export declare const env: {
-    DB_HOST: string;
-    DB_PORT: number;
-    DB_NAME: string;
-    DB_USER: string;
-    DB_PASSWORD: string;
-    PORT: number;
-    PASS_PERCENTAGE: number;
-    ACADEMIC_YEAR: string;
-};
+/** Validated process.env, read once. Throws at boot when anything is missing or unsafe. */
+export declare function loadEnv(): Env;
 //# sourceMappingURL=env.d.ts.map

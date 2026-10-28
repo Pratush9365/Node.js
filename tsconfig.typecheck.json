@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["index.ts", "src", "scripts", "tests", "vitest.config.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  }
+}

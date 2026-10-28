@@ -9,6 +9,6 @@ export declare class MarkController {
     getById(req: Request, res: Response): Promise<void>;
     update(req: Request, res: Response): Promise<void>;
     delete(req: Request, res: Response): Promise<void>;
-    getSubjectAverages(_req: Request, res: Response): Promise<void>;
+    getSubjectAverages(req: Request, res: Response): Promise<void>;
 }
 //# sourceMappingURL=mark.controller.d.ts.map

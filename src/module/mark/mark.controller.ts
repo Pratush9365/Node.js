@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
-import { AppError, HttpStatus } from "../../errors/AppError.js";
+import { HttpStatus } from "../../errors/AppError.js";
+import { requireActor } from "../../middleware/authenticate.js";
+import { Validators } from "../../utils/validators.js";
 import { MarkDto } from "./mark.dto.js";
 import type { MarkFilters } from "./mark.interface.js";
 import { MarkService } from "./mark.service.js";
@@ -8,40 +10,39 @@ export class MarkController {
     public constructor(private readonly service = new MarkService()) {}
 
     private markId(req: Request): string {
-        const { markId } = req.params;
-        if (typeof markId !== "string" || !markId) throw AppError.badRequest("markId is required");
-        return markId;
+        return Validators.uuidParam(req.params.markId, "markId");
     }
 
     public async create(req: Request, res: Response): Promise<void> {
-        const mark = await this.service.create(MarkDto.create(req.body));
+        const mark = await this.service.create(requireActor(req), MarkDto.create(req.body));
         res.status(HttpStatus.CREATED).json(mark);
     }
 
     public async getAll(req: Request, res: Response): Promise<void> {
         const { studentId, subject } = req.query;
         const filters: MarkFilters = {};
-        if (typeof studentId === "string" && studentId) filters.studentId = studentId;
+        if (typeof studentId === "string" && studentId) filters.studentId = Validators.uuidParam(studentId, "studentId");
         if (typeof subject === "string" && subject) filters.subject = subject;
-        res.status(HttpStatus.OK).json(await this.service.getAll(filters));
+        res.status(HttpStatus.OK).json(await this.service.getAll(requireActor(req), filters));
     }
 
     public async getById(req: Request, res: Response): Promise<void> {
-        const mark = await this.service.getById(this.markId(req));
+        const mark = await this.service.getById(requireActor(req), this.markId(req));
         res.status(HttpStatus.OK).json(mark);
     }
 
     public async update(req: Request, res: Response): Promise<void> {
-        const mark = await this.service.update(this.markId(req), MarkDto.update(req.body));
+        const mark = await this.service.update(requireActor(req), this.markId(req), MarkDto.update(req.body));
         res.status(HttpStatus.OK).json(mark);
     }
 
     public async delete(req: Request, res: Response): Promise<void> {
-        await this.service.remove(this.markId(req));
+        await this.service.remove(requireActor(req), this.markId(req));
         res.status(HttpStatus.NO_CONTENT).send();
     }
 
-    public async getSubjectAverages(_req: Request, res: Response): Promise<void> {
-        res.status(HttpStatus.OK).json({ data: await this.service.getSubjectAverages() });
+    public async getSubjectAverages(req: Request, res: Response): Promise<void> {
+        const data = await this.service.getSubjectAverages(requireActor(req), MarkDto.averagesQuery(req.query));
+        res.status(HttpStatus.OK).json({ data });
     }
 }

@@ -8,5 +8,3 @@ export class UserRoute {
         this.router.post("/post-api", this.controller.create.bind(this.controller));
     }
 }
-
-export const userRoute = new UserRoute().router;

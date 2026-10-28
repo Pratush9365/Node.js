@@ -1,4 +1,5 @@
 import { AppDataSource } from "../../config/data-source.js";
+import { applyStudentScope } from "../access/student-scope.js";
 import { Student } from "./student.entity.js";
 export class StudentRepository {
     repository;
@@ -8,8 +9,12 @@ export class StudentRepository {
     create(input) {
         return this.repository.save(this.repository.create(input));
     }
-    findAll() {
-        return this.repository.find({ order: { name: "ASC", id: "ASC" } });
+    findAll(scope) {
+        const query = this.repository
+            .createQueryBuilder("student")
+            .orderBy("student.name", "ASC")
+            .addOrderBy("student.id", "ASC");
+        return applyStudentScope(query, "student", scope).getMany();
     }
     findById(id) {
         return this.repository.findOneBy({ id });
